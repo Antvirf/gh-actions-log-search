@@ -5,7 +5,7 @@ This small tool allows you to search for specific words among the GitHub Actions
 Note that for larger organisations or user accounts with a lot of repositories (or if you oversize the `MAX_NUMBER_OF_RUN_LOGS` parameter) you can very quickly reach the [GitHub API rate limits](https://docs.github.com/en/rest/overview/resources-in-the-rest-api?apiVersion=2022-11-28#rate-limiting) (5k per hour per regular user). The maximum number of calls that will be made is modeled below.
 
 ```math
-1 + (Number of repositories matching your pattern) * max(MAX_NUMBER_OF_RUN_LOGS, actual available workflow runs in a particular repository)
+1+N_{repositories}*min(MAX\_NUMBER\_OF\_RUN\_LOGS, N_{workflow runs in repository})
 ```
 
 As an example, for a user with `20` repositories, where each repo has `10` workflow runs, but where `MAX_NUMBER_OF_RUN_LOGS` is set to `5`, the script will make one initial call to get the list of repositories, and then 5 calls for each repository-run, for a total of `1 + 20 * 5 = 101` calls. The actual number may vary slightly if repositories contain less workflow runs than `MAX_NUMBER_OF_RUN_LOGS`.
