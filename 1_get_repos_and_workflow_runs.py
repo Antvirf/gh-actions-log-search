@@ -43,6 +43,6 @@ def get_repositories_and_action_run_ids(access_token):
 
 if __name__ == "__main__":
     with open(".secrets", "r") as secrets:
-        access_token = secrets.readlines()[0]
+        access_token = secrets.readlines()[0].strip()
 
     get_repositories_and_action_run_ids(access_token)

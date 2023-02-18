@@ -11,27 +11,30 @@ from parameters_and_helpers import (REPO_NAME_INCLUDE_PATTERNS,
                                     RUN_IDS_JSON_PATH, read_dict_as_json)
 
 
-def get_repositories_and_action_run_ids_read_only(input_access_token):
+def get_repositories_and_action_run_ids_read_only(access_token):
+    run_ids = read_dict_as_json(RUN_IDS_JSON_PATH)
 
-    py_github = Github(input_access_token)
+    py_github = Github(access_token)
     repo_list = py_github.get_user().get_repos()
 
-    # limit to org only (no personal repos)
+    # limit repositories to a particular organisation or other name pattern
     repo_list = [x for x in repo_list if (
         any([include_name in x.url for include_name in REPO_NAME_INCLUDE_PATTERNS]))]
 
-    run_ids = read_dict_as_json(RUN_IDS_JSON_PATH)
     return repo_list, run_ids
 
 
 async def fetch_single_log(session, repository, wf_id):
     url = f"https://api.github.com/repos/{repository}/actions/runs/{wf_id}/logs"
+    filename = f"{str(repository).replace('/', '-')}_{wf_id}"
+    extracted_file_path = f"./logs_extracted/{str(repository).replace('/', '-')}/{wf_id}"
+
+    # Check if the particular workflow has already been downloaded - if yes, skip
+    if os.path.exists(extracted_file_path):
+        return
     async with session.get(url) as resp:
         content = await resp.read()
         status = resp.status
-
-    filename = f"{str(repository).replace('/', '-')}_{wf_id}"
-    extracted_file_path = f"./logs_extracted/{str(repository).replace('/', '-')}/{wf_id}"
 
     if status == 200:
         zip_filename = f"./logs/{filename}.zip"
@@ -76,7 +79,7 @@ async def fetch_logs(repo_list, run_ids, access_token):
 
 if __name__ == "__main__":
     with open(".secrets", "r") as secrets:
-        access_token = secrets.readlines()[0]
+        access_token = secrets.readlines()[0].strip()
 
     repo_list, run_ids = get_repositories_and_action_run_ids_read_only(
         access_token)
