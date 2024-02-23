@@ -160,7 +160,7 @@ dmypy.json
 cython_debug/
 
 # Project specific
-logs/*
+logs/*.zip
 logs_extracted/*
 *.json
 backups/*
